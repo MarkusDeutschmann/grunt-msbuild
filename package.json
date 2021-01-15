@@ -1,22 +1,32 @@
 {
-  "name": "grunt-msbuild",
-  "version": "1.1.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/stevewillcock/grunt-msbuild.git"
-  },
-  "keywords": [
-    "gruntplugin",
-    "msbuild"
-  ],
-  "author": "Steve Willcock",
-  "license": "MIT",
-  "dependencies": {
-    "async": "2.6.2"
-  }
+	"name": "grunt-msbuild",
+	"version": "2.0.0",
+	"description": "",
+	"main": "tasks/msbuild.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/stevewillcock/grunt-msbuild.git"
+	},
+	"keywords": [
+		"gruntplugin",
+		"msbuild"
+	],
+	"author": "Steve Willcock",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/async": "3.2.5",
+		"@types/grunt": "0.4.25",
+		"@types/node": "^10.17.50",
+		"grunt": "1.3.0",
+		"grunt-contrib-compress": "2.0.0",
+		"grunt-shell": "3.0.1",
+		"tslint": "6.1.3",
+		"typescript": "4.1.3"
+	},
+	"dependencies": {
+		"async": "3.2.0"
+	}
 }

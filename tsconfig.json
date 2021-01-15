@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es2015",
+		"noImplicitAny": true,
+		"declaration": false,
+		"removeComments": true,
+		"preserveConstEnums": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": false,
+		"sourceMap": true,
+		"moduleResolution": "node",
+		"outDir": "./tasks"
+	},
+	"include": ["src/class/", "src"],
+	"exclude": [
+		"node_modules"
+	]
+}
