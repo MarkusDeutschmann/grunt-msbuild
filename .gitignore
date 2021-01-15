@@ -18,10 +18,14 @@ node_modules/
 [Rr]elease/
 x64/
 build/
-[Bb]in/
+tests/[Bb]in/
 [Oo]bj/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 Nunit-Test-Results.xml
+
+#artifacts
+/tasks
+*.tar
