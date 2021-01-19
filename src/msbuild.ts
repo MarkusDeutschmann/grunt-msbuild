@@ -25,9 +25,8 @@ interface IMSBuildOptions {
 	consoleLoggerParameters: string;
 	visualStudioVersion: string;
 	inferMsbuildPath: boolean;
-	inferBuildPathProducts: string | string[];
-	inferBuildPathRequires: string | string[];
-	inferBuildPathVersion: string;
+	vswhereProducts: string | string[];
+	vswhereVersion: string;
 }
 
 module.exports = (grunt: IGrunt): void => {
@@ -44,9 +43,6 @@ module.exports = (grunt: IGrunt): void => {
 				consoleLoggerParameters: undefined,
 				customArgs: [],
 				failOnError: true,
-				inferBuildPathProducts: undefined,
-				inferBuildPathRequires: undefined,
-				inferBuildPathVersion: undefined,
 				inferMsbuildPath: false,
 				maxCpuCount: 1,
 				msbuildPath: "",
@@ -56,12 +52,10 @@ module.exports = (grunt: IGrunt): void => {
 				projectConfiguration: "Release",
 				targets: ["Build"],
 				verbosity: EVerbosityLevel.normal,
-				visualStudioVersion: undefined
+				visualStudioVersion: undefined,
+				vswhereProducts: undefined,
+				vswhereVersion: undefined
 			});
-
-			/*if (!options.projectConfiguration) {
-				options.projectConfiguration = "Release";
-			}*/
 
 			grunt.log.verbose.writeln(`Using Options: ${ JSON.stringify(options, undefined, 4).cyan }`);
 
@@ -73,10 +67,8 @@ module.exports = (grunt: IGrunt): void => {
 				files.push({ src: [""] });
 			}
 
-			//  cb: () => {}) => {}
-			// (cb: () => {}) => {})
 			files.forEach((filePair) => {
-				grunt.log.verbose.writeln(`File ${ filePair }`);
+				grunt.log.verbose.writeln(`File ${ JSON.stringify(filePair, undefined, 4)}`);
 				filePair.src.forEach((src: string) => {
 					fileExists = true;
 					projectFunctions.push((callback: () => {}) => {
@@ -93,8 +85,7 @@ module.exports = (grunt: IGrunt): void => {
 				grunt.warn("No project or solution files found");
 			}
 
-			// tslint:disable-next-line:no-any
-			async.series(projectFunctions as any, () => {
+			async.series(projectFunctions as async.AsyncFunction<unknown, Error>[], () => {
 				asyncCallback();
 			});
 
@@ -112,20 +103,17 @@ module.exports = (grunt: IGrunt): void => {
 		}
 
 		if (!options.inferMsbuildPath) {
-			if (options.inferBuildPathProducts !== "*") {
-				grunt.log.writeln("options.msbuildPath not set. So options.inferBuildPathProducts is ignored");
+			if (options.vswhereProducts !== "*") {
+				grunt.log.writeln("options.msbuildPath not set. So options.vswhereProducts is ignored");
 			}
-			if (options.inferBuildPathRequires) {
-				grunt.log.writeln("options.msbuildPath not set. So options.inferBuildPathRequires is ignored");
-			}
-			if (options.inferBuildPathVersion) {
-				grunt.log.writeln("options.msbuildPath not set. So options.inferBuildPathVersion is ignored");
+			if (options.vswhereVersion) {
+				grunt.log.writeln("options.msbuildPath not set. So options.vswhereVersion is ignored");
 			}
 		}
 
 		let cmd = options.msbuildPath;
 		if (options.inferMsbuildPath) {
-			cmd = inferMSBuildPathViaVSWhere(options.inferBuildPathProducts, options.inferBuildPathRequires, options.inferBuildPathVersion);
+			cmd = inferMSBuildPathViaVSWhere(options.vswhereProducts, options.vswhereVersion);
 		}
 		const args = createCommandArgs(src, options);
 
@@ -140,7 +128,7 @@ module.exports = (grunt: IGrunt): void => {
 			stdio: "inherit"
 		});
 
-		cp.on("close", ( code: number ): void => {
+		cp.on("close", (code: number): void => {
 			const success = code === 0;
 			grunt.log.verbose.writeln(`close received - code: ${ success }`);
 
@@ -167,36 +155,35 @@ module.exports = (grunt: IGrunt): void => {
 	}
 
 	// tslint:disable-next-line:only-arrow-functions
-	function inferMSBuildPathViaVSWhere(inferBuildPathProducts: string | string[], inferBuildPathRequires: string | string[],
-		inferBuildPathVersion: string): string {
+	function setParams(vswhereProducts: string | string[], vswhereVersion: string): string[] {
+		const params: string[] = [
+			"-latest",
+			"-requires Microsoft.Component.MSBuild",
+			"-find MSBuild\\**\\MSBuild.exe"
+		];
+
+		if (vswhereVersion) {
+			params.push(` -version ${ vswhereVersion }`);
+		}
+		if (!vswhereProducts && !vswhereVersion) {
+			params.push(` -products *`);
+		} else if (vswhereProducts) {
+			params.push(`-products ${ prepareParam(vswhereProducts).join(" ") }`);
+		}
+		return params;
+	}
+
+	// tslint:disable-next-line:only-arrow-functions
+	function inferMSBuildPathViaVSWhere(inferBuildPathProducts: string | string[], inferBuildPathVersion: string): string {
 
 		grunt.log.verbose.writeln("Using vswhere.exe to infer path for msbuild");
 
 		const exePath = path.resolve(__dirname, "../bin/vswhere.exe");
 		const quotedExePath = `"${ exePath }"`;
-		let inferBuildPathRequiresMerged;
-		if (inferBuildPathRequires) {
-			const inferBuildPathRequiresTmp = prepareParam(inferBuildPathRequires);
-			inferBuildPathRequiresMerged = inferBuildPathRequiresTmp.concat(
-				["Microsoft.Component.MSBuild"].filter((item) => inferBuildPathRequiresTmp.indexOf(item) < 0));
-		} else {
-			inferBuildPathRequiresMerged = ["Microsoft.Component.MSBuild"];
-		}
-		let inferBuildPathVersionStr = "";
-		if (inferBuildPathVersion) {
-			inferBuildPathVersionStr = ` -version ${ inferBuildPathVersion }`;
-		}
-		if (!inferBuildPathProducts && !inferBuildPathVersionStr) {
-			inferBuildPathProducts = undefined;
-		}
-		let inferBuildPathProductsStr = "";
-		if (inferBuildPathProducts) {
-			inferBuildPathProductsStr = `-products ${ prepareParam(inferBuildPathProducts).join(" ") }`;
-		}
 
-		const quotedExePathWithArgs = `${ quotedExePath } -latest${ inferBuildPathProductsStr } -requires ${ inferBuildPathRequiresMerged.join(" ") }${ inferBuildPathVersionStr } -find MSBuild\\**\\MSBuild.exe`;
+		const quotedExePathWithArgs = `${ quotedExePath } ${ setParams(inferBuildPathProducts, inferBuildPathVersion).join(" ") }`;
 
-		grunt.log.verbose.writeln(`using quoted exe path: ${quotedExePathWithArgs}`);
+		grunt.log.verbose.writeln(`using quoted exe path: ${ quotedExePathWithArgs }`);
 
 		const resultString = execSync(quotedExePathWithArgs).toString();
 		grunt.log.verbose.writeln("vswhere results start");

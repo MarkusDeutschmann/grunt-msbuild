@@ -67,9 +67,8 @@ grunt.initConfig({
 | nologo                  | If msbuild should hide logo | true
 | msbuildPath             | Path to MSBuild.exe. Required if inferMsbuildPath is not set to true.
 | inferMsbuildPath        | If the msbuildpath should be inferred using vswhere. Overrides the given msbuildPath value. | false
-| inferBuildPathProducts  | Ignored if inferMsbuildPath is false. Parameter of 'products' option of vswhere.exe. One or more product IDs to find. Defaults to Community, Professional, and Enterprise. Specify "\*" by itself to search all product instances installed. See <https://aka.ms/vs/workloads> for a list of product IDs. | \*
-| inferBuildPathRequires  | Ignored if inferMsbuildPath is false. Parameter of 'requires' option of vswhere.exe. One or more workload or component IDs required when finding instances. All specified IDs must be installed. See <https://aka.ms/vs/workloads> for a list of workload and component IDs.
-| inferBuildPathVersion  | Ignored if inferMsbuildPath is false. Parameter of 'version' option of vswhere.exe. A version range for instances to find. Example: [15.0,16.0) will find versions 15.\*.
+| vswhereProducts  | Ignored if inferMsbuildPath is false. Parameter of 'products' option of vswhere.exe. One or more product IDs to find. Defaults to Community, Professional, and Enterprise. Specify "\*" by itself to search all product instances installed. See <https://aka.ms/vs/workloads> for a list of product IDs. | \*
+| vswhereVersion  | Ignored if inferMsbuildPath is false. Parameter of 'version' option of vswhere.exe. A version range for instances to find. Example: [15.0,16.0) will find versions 15.\*.
 
 For more information, see [MSBuild Command-Line Reference](http://msdn.microsoft.com/en-us/library/ms164311.aspx).
 

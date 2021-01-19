@@ -60,6 +60,4 @@ module.exports = function(grunt) {
 		"compress:npmpackage"
 	]);
 
-	grunt.registerTask("test", ["shell:tslint", "shell:tsc"]);
-
 };

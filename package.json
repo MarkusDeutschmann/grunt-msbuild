@@ -1,8 +1,7 @@
 {
 	"name": "grunt-msbuild",
 	"version": "2.0.0",
-	"description": "",
-	"main": "tasks/msbuild.js",
+	"description": "Build projects with MSBuild and XBuild using Grunt",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
